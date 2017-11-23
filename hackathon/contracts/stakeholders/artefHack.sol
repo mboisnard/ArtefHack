@@ -18,12 +18,14 @@ contract ArtefHack is Role {
 		bytes32 content;
 		bool message;
 		bool score;
+		uint pref;
 	}
 
 	bytes32 firstContent;
 	mapping(address => UserResult[]) results;
 	mapping(address => uint) lastCatalogueId;
 	mapping(uint => bytes32) contents;
+	mapping(address => uint) lastPref;
 
 	function ArtefHack(address _balances, address _publisher, address _roles, address _catalogue) Role(_roles) public {
 	    balances = Balances(_balances);
@@ -43,32 +45,50 @@ contract ArtefHack is Role {
 	}
 
 	function visit() public isRole("User") returns (bytes32, bool) {
-		/*require(artefhack > 0);
-		//TODO
-		bool message = true;
-		if(firstContent == "") {
-			firstContent = publish(0);
-		}
-  	return (firstContent, message);*/
-		
+	
 		// Première visite
+		uint catalogueId;
+		uint preference;
+		bool message;
+
 		if (results[msg.sender].length == 0) {
-			uint catalogueId = catalogue.getByPrefAt(90, 0);
-			if (contents[catalogueId] == "") {
-				contents[catalogueId] = publish(catalogueId);
+			preference = 90;
+		} else {
+			
+			UserResult[] userResults = results[msg.sender];
+			UserResult lastResult = userResults[userResults.length - 1];
+			
+			if (lastResult.score) {
+				preference = lastResult.pref - 1;
+			} else {
+				if (lastResult.pref > 20) {
+					preference = lastResult.pref - 20;
+				}	else {
+					preference = lastResult.pref + 20;
+				}
 			}
 		}
-		else {
 
+		catalogueId = catalogue.getByPrefAt(preference, 0);
+		if (contents[catalogueId] == "") {
+			contents[catalogueId] = publish(catalogueId);
 		}
+
+		lastPref[msg.sender] = preference;
+		lastCatalogueId[msg.sender] = catalogueId;
+		message = false;
+
+		return(contents[catalogueId], message);
 	}
 
 	function eval(bytes32 content, bool message, bool score) public isRole("User") {
 		UserResult result;
+
 		result.content = content;
 		result.message = message;
 		result.score = score;
 		result.catalogueId = lastCatalogueId[msg.sender];
+		result.pref = lastPref[msg.sender];
 
 		results[msg.sender].push(result);
 	}
