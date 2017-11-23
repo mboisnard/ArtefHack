@@ -56,7 +56,7 @@ contract ArtefHack is Role {
 		// Première visite
 		uint catalogueId;
 		uint preference;
-		bool message;
+		bool message = false;
 
 		if (results[msg.sender].length == 0) {
 			preference = 90;
@@ -67,6 +67,7 @@ contract ArtefHack is Role {
 			
 			if (lastResult.score) {
 				preference = lastResult.pref - 1;
+				message = true;
 			} else {
 				if (lastResult.pref > 20) {
 					preference = lastResult.pref - 20;
@@ -111,7 +112,6 @@ contract ArtefHack is Role {
 
 		lastPref[msg.sender] = preference;
 		lastCatalogueId[msg.sender] = catalogueId;
-		message = false;
 
 		return(contents[catalogueId].content, message);
 	}
