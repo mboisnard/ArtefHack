@@ -14,6 +14,7 @@ contract ArtefHack is Role {
   Publisher public publisher;
 
 	struct UserResult {
+		uint catalogueId;
 		bytes32 content;
 		bool message;
 		bool score;
@@ -21,6 +22,8 @@ contract ArtefHack is Role {
 
 	bytes32 firstContent;
 	mapping(address => UserResult[]) results;
+	mapping(address => uint) lastCatalogueId;
+	mapping(uint => bytes32) contents;
 
 	function ArtefHack(address _balances, address _publisher, address _roles, address _catalogue) Role(_roles) public {
 	    balances = Balances(_balances);
@@ -40,13 +43,24 @@ contract ArtefHack is Role {
 	}
 
 	function visit() public isRole("User") returns (bytes32, bool) {
-		require(artefhack > 0);
+		/*require(artefhack > 0);
 		//TODO
 		bool message = true;
-		if(firstContent == ""){
+		if(firstContent == "") {
 			firstContent = publish(0);
 		}
-  	return (firstContent, message);
+  	return (firstContent, message);*/
+		
+		// Première visite
+		if (results[msg.sender].length == 0) {
+			uint catalogueId = catalogue.getByPrefAt(90, 0);
+			if (contents[catalogueId] == "") {
+				contents[catalogueId] = publish(catalogueId);
+			}
+		}
+		else {
+
+		}
 	}
 
 	function eval(bytes32 content, bool message, bool score) public isRole("User") {
@@ -54,6 +68,7 @@ contract ArtefHack is Role {
 		result.content = content;
 		result.message = message;
 		result.score = score;
+		result.catalogueId = lastCatalogueId[msg.sender];
 
 		results[msg.sender].push(result);
 	}
