@@ -13,7 +13,14 @@ contract ArtefHack is Role {
 	Catalogue public catalogue;
   Publisher public publisher;
 
+	struct UserResult {
+		bytes32 content;
+		bool message;
+		bool score;
+	}
+
 	bytes32 firstContent;
+	mapping(address => UserResult[]) results;
 
 	function ArtefHack(address _balances, address _publisher, address _roles, address _catalogue) Role(_roles) public {
 	    balances = Balances(_balances);
@@ -43,6 +50,11 @@ contract ArtefHack is Role {
 	}
 
 	function eval(bytes32 content, bool message, bool score) public isRole("User") {
-		//TODO
+		UserResult result;
+		result.content = content;
+		result.message = message;
+		result.score = score;
+
+		results[msg.sender].push(result);
 	}
 }
