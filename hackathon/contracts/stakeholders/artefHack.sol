@@ -20,7 +20,7 @@ contract ArtefHack is Role {
 	    publisher = Publisher(_publisher);
 	    catalogue = Catalogue(_catalogue);
 	}
-
+	
 	function publish(uint catalogueId) public returns (bytes32) {
 		uint preference;
 		bytes32 content;
@@ -28,11 +28,11 @@ contract ArtefHack is Role {
 		return content;
 	}
 
-	function setArtefHack(address _artefhack) public isRole('Admin'){
+	function setArtefHack(address _artefhack) public isRole("Admin") {
 		artefhack = _artefhack;
 	}
 
-	function visit() public isRole('User') returns (bytes32, bool) {
+	function visit() public isRole("User") returns (bytes32, bool) {
 		require(artefhack > 0);
 		//TODO
 		bool message = true;
@@ -42,7 +42,7 @@ contract ArtefHack is Role {
   	return (firstContent, message);
 	}
 
-	function eval(bytes32 content, bool message, bool score) public isRole('User') {
+	function eval(bytes32 content, bool message, bool score) public isRole("User") {
 		//TODO
 	}
 }
