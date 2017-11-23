@@ -53,7 +53,19 @@ contract ArtefHack is Role {
 
 	function visit() public isRole("User") returns (bytes32, bool) {
 	
-		// Première visite
+		uint preference = getUserPreference();
+		uint prefCount = catalogue.getByPrefCount(preference);
+
+		uint catalogueId;
+		uint toSee;
+
+		if (prefCount > 0) {
+			(catalogueId, toSee) = getCatalogueIdForUserByPreference(preference, prefCount);
+		} else {
+			// ???
+		}
+
+		/*// Première visite
 		uint catalogueId;
 		uint preference;
 		bool message = false;
@@ -113,7 +125,68 @@ contract ArtefHack is Role {
 		lastPref[msg.sender] = preference;
 		lastCatalogueId[msg.sender] = catalogueId;
 
-		return(contents[catalogueId].content, message);
+		return(contents[catalogueId].content, message);*/
+	}
+
+	function getUserPreference() private returns (uint) {
+		uint preference;
+		
+		if (results[msg.sender].length == 0) {
+			preference = 90;
+		} else {
+			UserResult[] userResults = results[msg.sender];
+			UserResult lastResult = userResults[userResults.length - 1];
+			
+			if (lastResult.score) {
+				preference = lastResult.pref - 1;
+			} else {
+				if (lastResult.pref > 20) {
+					preference = lastResult.pref - 20;
+				}	else {
+					preference = lastResult.pref + 20;
+				}
+			}
+		}
+
+		return preference;
+	}
+
+	function getCatalogueIdForUserByPreference(uint preference, uint prefCount) private returns (uint, bool) {
+		uint id;
+		bool toSee = false;
+		
+		for (uint i = 0 ; i < prefCount ; ++i) {
+			uint catalogueId = catalogue.getByPrefAt(preference, i);
+
+			if (contentAlreadySeen(catalogueId)) {
+				continue;
+			}
+
+			// Si contenu non possédé
+			if (contents[catalogueId].content == "") {
+				// ???
+			}
+			else {
+				id = catalogueId;
+				toSee = true;
+				break;
+			}
+		}
+
+		return (id, toSee);
+	}
+
+	function contentAlreadySeen(uint catalogueId) private returns (bool) {
+		UserResult[] userResults = results[msg.sender];
+
+		for(uint i = 0 ; i < userResults.length ; ++i) {
+			UserResult result = userResults[i];
+			if (result.catalogueId == catalogueId) {
+				return true;
+			}
+		}
+
+		return false;
 	}
 
 	function eval(bytes32 content, bool message, bool score) public isRole("User") {
