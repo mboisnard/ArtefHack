@@ -70,14 +70,21 @@ contract ArtefHack is Role {
 		}
 
 		uint prefCount = catalogue.getByPrefCount(preference);
+		bool switched = false;
 
 		while (prefCount == 0) {
-			preference++;
+			if (preference < 100 && !switched) {
+				preference++;
+			} else {
+				preference--;
+				switched = true;
+			}
+			
 			prefCount = catalogue.getByPrefCount(preference);
 		}
 
 		catalogueId = catalogue.getByPrefAt(preference, 0);
-		
+
 		if (contents[catalogueId] == "") {
 			contents[catalogueId] = publish(catalogueId);
 		}
