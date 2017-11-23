@@ -69,7 +69,15 @@ contract ArtefHack is Role {
 			}
 		}
 
+		uint prefCount = catalogue.getByPrefCount(preference);
+
+		while (prefCount == 0) {
+			preference++;
+			prefCount = catalogue.getByPrefCount(preference);
+		}
+
 		catalogueId = catalogue.getByPrefAt(preference, 0);
+		
 		if (contents[catalogueId] == "") {
 			contents[catalogueId] = publish(catalogueId);
 		}
@@ -82,14 +90,6 @@ contract ArtefHack is Role {
 	}
 
 	function eval(bytes32 content, bool message, bool score) public isRole("User") {
-		UserResult result;
-
-		result.content = content;
-		result.message = message;
-		result.score = score;
-		result.catalogueId = lastCatalogueId[msg.sender];
-		result.pref = lastPref[msg.sender];
-
-		results[msg.sender].push(result);
+		results[msg.sender].push(UserResult(lastCatalogueId[msg.sender], content, message, score, lastPref[msg.sender]));
 	}
 }
